@@ -26,9 +26,14 @@ export function ensureTables(): Promise<void> {
           results jsonb not null default '[]',
           current_quiz jsonb,
           summary jsonb,
+          questions_per_quiz int not null default 3,
           updated_at timestamptz default now()
         )
       `);
+      // for tables created before this column existed
+      await pool.query(
+        `alter table lessons add column if not exists questions_per_quiz int not null default 3`,
+      );
     })();
   }
   return ready;

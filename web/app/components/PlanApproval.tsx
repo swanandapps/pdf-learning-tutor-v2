@@ -13,9 +13,10 @@ export function PlanApproval({
 }: {
   objectives: Objective[];
   busy: boolean;
-  onApprove: (objectives: Objective[]) => void;
+  onApprove: (objectives: Objective[], questionsPerQuiz: number) => void;
 }) {
   const [items, setItems] = useState<Objective[]>(objectives);
+  const [perQuiz, setPerQuiz] = useState(3);
 
   function update(id: string, patch: Partial<Objective>) {
     setItems((xs) => xs.map((o) => (o.id === id ? { ...o, ...patch } : o)));
@@ -197,9 +198,38 @@ export function PlanApproval({
         </button>
       </div>
 
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          fontSize: 14,
+          color: BRAND.text,
+        }}
+      >
+        <span style={{ fontWeight: 600 }}>Questions per quiz</span>
+        <input
+          type="number"
+          min={1}
+          max={10}
+          value={perQuiz}
+          onChange={(e) =>
+            setPerQuiz(Math.max(1, Math.min(10, Number(e.target.value) || 1)))
+          }
+          style={{
+            width: 64,
+            border: `1px solid ${BRAND.line}`,
+            borderRadius: 8,
+            padding: "8px 10px",
+            fontSize: 14,
+            outline: "none",
+          }}
+        />
+      </div>
+
       <button
         disabled={!canApprove}
-        onClick={() => onApprove(valid)}
+        onClick={() => onApprove(valid, perQuiz)}
         style={{
           alignSelf: "flex-start",
           background: canApprove ? BRAND.green : "#D1D5DB",

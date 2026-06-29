@@ -37,8 +37,9 @@ export async function planLesson(pdfText: string): Promise<PlanDraft> {
 export async function generateQuiz(
   objective: Objective,
   pdfText: string,
+  count: number,
 ): Promise<Quiz> {
-  const res = await agent("quiz-writer", quizSystem()).generate(
+  const res = await agent("quiz-writer", quizSystem(count)).generate(
     quizUser(objective, pdfText),
     { structuredOutput: { schema: QuizSchema } },
   );
@@ -47,6 +48,7 @@ export async function generateQuiz(
   quiz.questions.forEach((q) => {
     if (q.correctIndex >= q.options.length) q.correctIndex = 0;
   });
+  quiz.questions = quiz.questions.slice(0, count); // honor the requested count
   return quiz;
 }
 

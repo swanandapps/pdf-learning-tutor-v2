@@ -26,6 +26,7 @@ type LessonRow = {
   results: Result[];
   current_quiz: Quiz | null;
   summary: Summary | null;
+  questions_per_quiz: number;
 };
 
 async function loadRow(lessonId: string): Promise<LessonRow> {
@@ -80,6 +81,7 @@ export async function approvePlan(
   wf: PlanWorkflowHandle,
   lessonId: string,
   objectives: Objective[],
+  questionsPerQuiz: number,
 ): Promise<LessonView> {
   const run = await wf.createRun({ runId: lessonId });
   const res = await run.resume({
@@ -93,14 +95,15 @@ export async function approvePlan(
 
   const row = await loadRow(lessonId);
   const pdf = await getDocText(row.doc_id);
-  const quiz = await generateQuiz(approved[0], pdf);
+  const quiz = await generateQuiz(approved[0], pdf, questionsPerQuiz);
 
   await pool.query(
     `update lessons
         set status = 'quizzing', objectives = $2, objective_index = 0,
-            results = '[]', current_quiz = $3, plan = null, updated_at = now()
+            results = '[]', current_quiz = $3, plan = null,
+            questions_per_quiz = $4, updated_at = now()
       where id = $1`,
-    [lessonId, JSON.stringify(approved), JSON.stringify(quiz)],
+    [lessonId, JSON.stringify(approved), JSON.stringify(quiz), questionsPerQuiz],
   );
   return toView(await loadRow(lessonId));
 }
@@ -132,7 +135,7 @@ export async function submitResult(
   if (nextIdx < objectives.length) {
     // more objectives left -> next quiz
     const pdf = await getDocText(row.doc_id);
-    const quiz = await generateQuiz(objectives[nextIdx], pdf);
+    const quiz = await generateQuiz(objectives[nextIdx], pdf, row.questions_per_quiz);
     await pool.query(
       `update lessons
           set objective_index = $2, results = $3, current_quiz = $4, updated_at = now()

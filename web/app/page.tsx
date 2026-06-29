@@ -54,8 +54,8 @@ export default function Home() {
     }
   }
 
-  const approve = (objectives: Objective[]) =>
-    run(() => api.approve(lesson!.id, objectives));
+  const approve = (objectives: Objective[], questionsPerQuiz: number) =>
+    run(() => api.approve(lesson!.id, objectives, questionsPerQuiz));
 
   const submit = (score: number, total: number) =>
     run(() => api.submit(lesson!.id, score, total));

@@ -35,7 +35,7 @@ export const QuestionSchema = z.object({
 export type Question = z.infer<typeof QuestionSchema>;
 
 export const QuizSchema = z.object({
-  questions: z.array(QuestionSchema).min(2).max(3),
+  questions: z.array(QuestionSchema).min(1).max(12), // exact count set per lesson
 });
 export type Quiz = z.infer<typeof QuizSchema>;
 

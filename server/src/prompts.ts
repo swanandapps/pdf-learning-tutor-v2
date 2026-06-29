@@ -16,10 +16,10 @@ export function planUser(pdfText: string): string {
   return `Document:\n"""\n${pdfText.slice(0, MAX_PDF_CHARS)}\n"""`;
 }
 
-export function quizSystem(): string {
+export function quizSystem(count: number): string {
   return [
     "You are an assessment writer.",
-    "Write 2-3 multiple-choice questions that test ONE specific objective,",
+    `Write exactly ${count} multiple-choice questions that test ONE specific objective,`,
     "drawn strictly from the document. Each question has 2-4 options, exactly one",
     "correct option (give its 0-based index), a short explanation of why it is",
     "correct, and a hint that points the learner toward the answer WITHOUT",

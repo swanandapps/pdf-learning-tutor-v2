@@ -88,8 +88,12 @@ export const api = {
     );
   },
 
-  approve(id: string, objectives: Objective[]): Promise<LessonView> {
-    return post(`/lessons/${id}/approve`, { objectives });
+  approve(
+    id: string,
+    objectives: Objective[],
+    questionsPerQuiz: number,
+  ): Promise<LessonView> {
+    return post(`/lessons/${id}/approve`, { objectives, questionsPerQuiz });
   },
 
   submit(id: string, score: number, total: number): Promise<LessonView> {

@@ -90,11 +90,15 @@ export const mastra = new Mastra({
       registerApiRoute("/lessons/:id/approve", {
         method: "POST",
         handler: async (c) => {
-          const { objectives } = await readJson<{ objectives: any[] }>(c);
+          const { objectives, questionsPerQuiz } = await readJson<{
+            objectives: any[];
+            questionsPerQuiz?: number;
+          }>(c);
           const view = await approvePlan(
             planHandle(),
             c.req.param("id"),
             objectives,
+            questionsPerQuiz ?? 3,
           );
           return c.json(view);
         },
