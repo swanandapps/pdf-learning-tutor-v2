@@ -91,9 +91,10 @@ Deploy the backend first, since the frontend needs its URL at build time.
 
 1. You upload a PDF. The backend extracts the text (with `pdf-parse`) and stores it.
 2. It drafts a three-topic learning plan and then pauses, waiting for you to approve
-   or edit it. This pause is a real Mastra workflow that suspends and resumes, not
-   just a chat message you can ignore.
-3. Once you approve, it writes a short quiz for the first topic.
+   or edit it — you can rename or add objectives and pick how many questions each
+   quiz should have. This pause is a real Mastra workflow that suspends and resumes,
+   not just a chat message you can ignore.
+3. Once you approve, it writes a quiz for the first topic.
 4. You answer. A correct answer shows an explanation; a wrong one shows a hint and
    lets you try again without losing points. You can also ask the tutor for help
    along the way, and it won't hand you the answer.
@@ -134,15 +135,3 @@ web/                             # Next.js frontend (port 3000)
 - Next.js / React
 - Postgres
 - `pdf-parse` for pulling text out of the PDF
-
-## What I'd do next
-
-If this went past a prototype:
-
-- The score is currently worked out in the browser and trusted by the server. For
-  anything graded, I'd recompute it on the server and stop sending the correct answer
-  to the client.
-- Reloading mid-quiz keeps your place at the topic level but restarts that topic's
-  questions. I'd persist the in-topic progress too.
-- Only the plan approval uses a workflow, since it's the one step that has to wait
-  for a human. If more steps needed to pause, I'd move them into workflows as well.
