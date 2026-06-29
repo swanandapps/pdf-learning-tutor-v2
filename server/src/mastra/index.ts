@@ -47,6 +47,9 @@ export const mastra = new Mastra({
 
   server: {
     host: "0.0.0.0",
+    // Bind to the platform-provided port in production (Railway sets $PORT),
+    // falling back to 4111 for local dev.
+    port: process.env.PORT ? Number(process.env.PORT) : 4111,
     cors: { origin: "*", allowMethods: ["*"], allowHeaders: ["*"] },
     apiRoutes: [
       // 1. Upload a PDF: extract text, store it, return a docId.
