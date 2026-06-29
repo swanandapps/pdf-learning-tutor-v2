@@ -70,6 +70,21 @@ is somewhere else.
 
 Your keys live in `server/.env`, which is gitignored and never committed.
 
+## Deploying
+
+It's two services, so it deploys as two.
+
+**Backend → Railway.** Point Railway at this repo and set the root directory to
+`server`. Add three variables: `OPENAI_API_KEY`, `DATABASE_URL`, and `PORT` (the
+server binds to whatever port the platform hands it). Railway picks up
+`server/railway.json` and starts it, then give it a public domain.
+
+**Frontend → Vercel.** Import the repo with the root directory set to `web`, and set
+`NEXT_PUBLIC_MASTRA_URL` to the backend's public URL. Vercel detects Next.js and
+builds the rest.
+
+Deploy the backend first, since the frontend needs its URL at build time.
+
 ## How it works
 
 1. You upload a PDF. The backend extracts the text (with `pdf-parse`) and stores it.
