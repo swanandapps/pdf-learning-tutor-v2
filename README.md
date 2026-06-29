@@ -6,6 +6,8 @@ you go), and a little progress report at the end with study tips.
 
 It's built with TypeScript, Mastra, Next.js and Postgres.
 
+**[Live demo →](https://pdf-learning-tutor-v2.vercel.app)** — upload a PDF and give it a try.
+
 ## The idea behind it
 
 The main thing I cared about while building this was keeping the LLM on a short
