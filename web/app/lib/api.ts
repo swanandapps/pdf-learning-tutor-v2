@@ -1,8 +1,5 @@
-// Typed client for the Mastra backend.
-//
-// These types mirror server/src/schema.ts. The frontend renders whatever state
-// the server reports — it holds no orchestration logic of its own. Every call
-// here returns the same `LessonView`, so the UI is a pure function of state.
+// typed client for the backend. these types mirror server/src/schema.ts,
+// and every call returns the same LessonView the UI renders.
 
 export const MASTRA_URL =
   process.env.NEXT_PUBLIC_MASTRA_URL || "http://localhost:4111";

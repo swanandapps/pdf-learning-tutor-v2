@@ -6,11 +6,7 @@ import { PlanApproval } from "./components/PlanApproval";
 import { Quiz } from "./components/Quiz";
 import { Summary } from "./components/Summary";
 
-/**
- * The whole UI is a function of one value: the `LessonView` the server returns.
- * There is no client-side orchestration — we upload, then render whatever state
- * the server reports, and POST transitions back to advance the lesson.
- */
+// the UI just renders whatever LessonView the server reports
 export default function Home() {
   const [lesson, setLesson] = useState<LessonView | null>(null);
   const [busy, setBusy] = useState(false);
@@ -18,7 +14,7 @@ export default function Home() {
   const [fileName, setFileName] = useState("");
   const [error, setError] = useState("");
 
-  // Restore an in-progress lesson on reload (durable, server-side state).
+  // restore an in-progress lesson on reload
   useEffect(() => {
     const id = localStorage.getItem("lessonId");
     if (!id) return;

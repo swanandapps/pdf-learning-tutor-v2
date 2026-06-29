@@ -4,13 +4,7 @@ import type { Objective, Quiz as QuizT, Result } from "../lib/api";
 import { BRAND } from "../lib/theme";
 import { AskTutor } from "./AskTutor";
 
-/**
- * The MCQ widget. Pure UI: it renders the questions the server generated, grades
- * the selection against `correctIndex` for instant green/red feedback, lets the
- * user retry a wrong answer with no penalty, and reports the first-try score back
- * up when the objective is finished. It owns no lesson state beyond the current
- * question — advancing the lesson is the server's job (page.tsx -> /submit).
- */
+// the quiz widget: grades the answer for instant feedback, reports the first-try score when done
 export function Quiz({
   lessonId,
   objectives,
@@ -63,7 +57,7 @@ export function Quiz({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div>
-        {/* Lesson-wide progress: one segment per objective, filled as you go */}
+        {/* progress across objectives */}
         <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
           {objectives.map((o, i) => {
             const done = i < objectiveIndex;
@@ -137,7 +131,7 @@ export function Quiz({
           boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
         }}
       >
-        {/* progress */}
+        {/* progress through this objective's questions */}
         <div
           style={{
             height: 6,
@@ -320,7 +314,6 @@ export function Quiz({
         </div>
       </div>
 
-      {/* The one open-ended, conversational surface. */}
       <AskTutor lessonId={lessonId} />
     </div>
   );

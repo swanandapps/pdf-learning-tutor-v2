@@ -15,18 +15,7 @@ import {
   type PlanWorkflowHandle,
 } from "../lesson-controller";
 
-/**
- * The Mastra server.
- *
- * The REST routes below are deliberately thin: each one validates input, calls a
- * single controller transition, and returns the lesson view. All the thinking is
- * in the controller (orchestration) and llm.ts (generation). The routes are the
- * typed contract the frontend talks to — no chat protocol, no tool-call plumbing.
- */
-
-// Helper so route handlers can resume the plan workflow bound to storage.
-// Reads from the module-scoped `mastra` instance (assigned below, resolved at
-// request time), which guarantees the workflow is wired to PostgresStore.
+// grab the workflow at request time so it's wired to the configured storage
 function planHandle(): PlanWorkflowHandle {
   return mastra.getWorkflow("planWorkflow") as unknown as PlanWorkflowHandle;
 }
@@ -47,12 +36,10 @@ export const mastra = new Mastra({
 
   server: {
     host: "0.0.0.0",
-    // Bind to the platform-provided port in production (Railway sets $PORT),
-    // falling back to 4111 for local dev.
-    port: process.env.PORT ? Number(process.env.PORT) : 4111,
+    port: process.env.PORT ? Number(process.env.PORT) : 4111, // Railway sets PORT
     cors: { origin: "*", allowMethods: ["*"], allowHeaders: ["*"] },
     apiRoutes: [
-      // 1. Upload a PDF: extract text, store it, return a docId.
+      // parse a PDF and store its text
       registerApiRoute("/upload", {
         method: "POST",
         handler: async (c) => {
@@ -76,7 +63,7 @@ export const mastra = new Mastra({
         },
       }),
 
-      // 2. Start a lesson: draft a plan and pause for approval (HITL).
+      // start a lesson: draft a plan and pause for approval
       registerApiRoute("/lessons", {
         method: "POST",
         handler: async (c) => {
@@ -87,7 +74,7 @@ export const mastra = new Mastra({
         },
       }),
 
-      // 3. Read the current lesson state (also used to restore on reload).
+      // current lesson state (also used to restore on reload)
       registerApiRoute("/lessons/:id", {
         method: "GET",
         handler: async (c) => {
@@ -99,7 +86,7 @@ export const mastra = new Mastra({
         },
       }),
 
-      // 4. Approve the plan -> generate the first quiz.
+      // approve the plan -> first quiz
       registerApiRoute("/lessons/:id/approve", {
         method: "POST",
         handler: async (c) => {
@@ -113,7 +100,7 @@ export const mastra = new Mastra({
         },
       }),
 
-      // 5. Submit a quiz result -> next quiz, or the final summary.
+      // submit a result -> next quiz or summary
       registerApiRoute("/lessons/:id/submit", {
         method: "POST",
         handler: async (c) => {
@@ -126,7 +113,7 @@ export const mastra = new Mastra({
         },
       }),
 
-      // 6. Ask the tutor (open-ended hint/explanation, never reveals the answer).
+      // ask the tutor for a hint
       registerApiRoute("/lessons/:id/ask", {
         method: "POST",
         handler: async (c) => {

@@ -2,10 +2,7 @@
 import type { Result, Summary as SummaryT } from "../lib/api";
 import { BRAND } from "../lib/theme";
 
-/**
- * The end-of-lesson report. The numeric scores come from `results` (computed in
- * code on the server), the prose comes from the summary LLM call. Pure UI.
- */
+// end-of-lesson report
 export function Summary({
   summary,
   results,

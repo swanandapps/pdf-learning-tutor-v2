@@ -5,13 +5,7 @@ import { BRAND, DIFFICULTY_COLOR } from "../lib/theme";
 
 const DIFFICULTIES: Difficulty[] = ["beginner", "intermediate", "advanced"];
 
-/**
- * The human-in-the-loop gate. The server has drafted a plan and the workflow is
- * suspended waiting for this. The user has full control: rename, edit focus,
- * change difficulty, remove, reorder by removing/adding, or type a brand-new
- * objective from scratch. Approving resumes the suspended workflow with exactly
- * the objectives shown here.
- */
+// the approval gate: edit / add / remove objectives, then approve to start
 export function PlanApproval({
   objectives,
   busy,
@@ -41,7 +35,7 @@ export function PlanApproval({
     ]);
   }
 
-  // Drop blank objectives on approve; require at least one real one.
+  // drop blank objectives; need at least one
   const valid = items.filter((o) => o.title.trim());
   const canApprove = !busy && valid.length > 0;
 

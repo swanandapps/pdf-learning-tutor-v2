@@ -1,16 +1,6 @@
 import type { Objective } from "./schema";
 
-/**
- * Prompts live here, separated from the code that calls them.
- *
- * Notice what these prompts do NOT contain: no "STEP 1 / STEP 2", no "call this
- * tool next", no "never do X". Each prompt asks the model for exactly one
- * artifact. Orchestration is the workflow's job (see lesson-controller.ts and
- * mastra/workflows/plan-workflow.ts), not the prompt's.
- */
-
-/** Keep token usage predictable — trimming the PDF is a code concern. */
-export const MAX_PDF_CHARS = 12_000;
+export const MAX_PDF_CHARS = 12_000; // cap so token use stays predictable
 
 export function planSystem(): string {
   return [
@@ -65,12 +55,7 @@ export function summaryUser(
   return `Scores:\n${lines.join("\n")}`;
 }
 
-/**
- * The tutor Q&A guardrail. This is the ONE open-ended LLM call in the app
- * (a student asking "explain this" / "give me a hint"). The guardrail is twofold:
- *   1. Code never passes it the correct answer (see llm.answerQuestion).
- *   2. This prompt forbids revealing the answer and steers back to the quiz.
- */
+// guardrail: don't reveal which option is correct (and answerQuestion never gets it)
 export function tutorSystem(objective: Objective): string {
   return [
     "You are a patient tutor helping a student with the current learning",

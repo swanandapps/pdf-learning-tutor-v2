@@ -3,12 +3,7 @@ import { useState } from "react";
 import { api } from "../lib/api";
 import { BRAND } from "../lib/theme";
 
-/**
- * The single open-ended surface in the app: the student can ask for a hint or to
- * learn more. The server guardrails this (it never gives the model the answer and
- * the prompt forbids revealing it), so the UI just sends the question and shows
- * the reply.
- */
+// ask the tutor for a hint — the server keeps it from giving away the answer
 export function AskTutor({ lessonId }: { lessonId: string }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");

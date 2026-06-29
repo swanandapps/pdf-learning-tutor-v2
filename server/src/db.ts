@@ -1,23 +1,10 @@
 import pg from "pg";
 
-/**
- * Postgres connection pool + tables.
- *
- * Two app tables:
- *  - `documents` — extracted PDF text, keyed by docId.
- *  - `lessons`   — the read model for one learning session (its state, the
- *                  approved objectives, the current quiz, scores, summary).
- *
- * A third concern — durable workflow run snapshots for the plan-approval HITL —
- * is owned by Mastra's PostgresStore, which manages its own tables.
- *
- * Tables are created on demand, so there is no separate migration step.
- */
 export const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
 let ready: Promise<void> | null = null;
 
-/** Idempotently create the app tables. Cached so it only runs once per process. */
+// create the tables on first use so there's no separate migration step
 export function ensureTables(): Promise<void> {
   if (!ready) {
     ready = (async () => {
@@ -47,7 +34,6 @@ export function ensureTables(): Promise<void> {
   return ready;
 }
 
-/** Load the extracted text for an uploaded PDF. */
 export async function getDocText(docId: string): Promise<string> {
   await ensureTables();
   const res = await pool.query("select content from documents where id = $1", [

@@ -3,26 +3,10 @@ import { generateQuiz, summarize, answerQuestion } from "./llm";
 import { DRAFT_PLAN_STEP } from "./mastra/workflows/plan-workflow";
 import type { LessonView, Objective, Quiz, Result, Summary } from "./schema";
 
-/**
- * The orchestrator — in code, not in a prompt.
- *
- * A learning session is a finite state machine:
- *
- *     start ──▶ awaiting_approval ──approve──▶ quizzing(0) ──submit──▶ quizzing(1)
- *                     │                            ▲   │                    │
- *                  (HITL gate,                     └───┘  (loop, in code)   │
- *                   a Mastra workflow)                                      ▼
- *                                                              ──submit──▶ complete
- *
- * Each transition is a method here. The LLM is called inside these methods as a
- * pure function (generateQuiz / summarize / answerQuestion) and never decides
- * which transition happens — this code does. The `lessons` table is the single
- * source of truth the frontend reads.
- *
- * The plan-approval gate is delegated to the Mastra `planWorkflow` via the small
- * structural handle below, so this file never imports Mastra's types directly.
- */
+// the lesson runs as a state machine: awaiting_approval -> quizzing -> complete.
+// each exported function is one transition; the lessons table holds the state.
 
+// just the bits of the workflow run we use, so we don't import Mastra's types here
 type WorkflowRun = {
   runId: string;
   start(args: { inputData: { docId: string } }): Promise<any>;
@@ -51,7 +35,7 @@ async function loadRow(lessonId: string): Promise<LessonRow> {
   return res.rows[0] as LessonRow;
 }
 
-/** Assemble the read model the frontend renders from a stored row. */
+// turn a db row into the view the frontend renders
 function toView(row: LessonRow): LessonView {
   const view: LessonView = { id: row.id, status: row.status };
   if (row.status === "awaiting_approval" && row.plan) view.plan = row.plan;
@@ -67,7 +51,7 @@ function toView(row: LessonRow): LessonView {
   return view;
 }
 
-/** State 0 -> awaiting_approval. Runs the plan workflow until it suspends. */
+// upload -> draft a plan and suspend, waiting for approval
 export async function startLesson(
   wf: PlanWorkflowHandle,
   docId: string,
@@ -78,8 +62,7 @@ export async function startLesson(
   if (res.status !== "suspended") {
     throw new Error(`plan workflow did not suspend (status: ${res.status})`);
   }
-  // Mastra namespaces the workflow-level suspend payload by step id, so the
-  // payload our step passed to suspend({ plan }) lives under the step's key.
+  // the suspend payload is keyed by step id
   const plan = res.suspendPayload[DRAFT_PLAN_STEP].plan as {
     objectives: Objective[];
   };
@@ -92,7 +75,7 @@ export async function startLesson(
   return toView(await loadRow(run.runId));
 }
 
-/** awaiting_approval -> quizzing(0). Resumes the workflow with the human's choices. */
+// resume the workflow with the chosen objectives, then make the first quiz
 export async function approvePlan(
   wf: PlanWorkflowHandle,
   lessonId: string,
@@ -122,16 +105,14 @@ export async function approvePlan(
   return toView(await loadRow(lessonId));
 }
 
-/** quizzing(i) -> quizzing(i+1) or -> complete. The loop, in code. */
+// record the score, then either make the next quiz or finish with a summary
 export async function submitResult(
   lessonId: string,
   score: number,
   total: number,
 ): Promise<LessonView> {
   const row = await loadRow(lessonId);
-  // Ignore stale/duplicate submits (e.g. after completion): only an active
-  // quizzing lesson has a current objective to score against.
-  if (row.status !== "quizzing") return toView(row);
+  if (row.status !== "quizzing") return toView(row); // ignore stale/duplicate submits
 
   const objectives = row.objectives ?? [];
   const idx = row.objective_index;
@@ -149,7 +130,7 @@ export async function submitResult(
   const nextIdx = idx + 1;
 
   if (nextIdx < objectives.length) {
-    // More objectives: generate the next quiz and advance.
+    // more objectives left -> next quiz
     const pdf = await getDocText(row.doc_id);
     const quiz = await generateQuiz(objectives[nextIdx], pdf);
     await pool.query(
@@ -159,7 +140,7 @@ export async function submitResult(
       [lessonId, nextIdx, JSON.stringify(results), JSON.stringify(quiz)],
     );
   } else {
-    // Last objective done: summarize and finish.
+    // that was the last one -> summary
     const summary = await summarize(objectives, results);
     await pool.query(
       `update lessons
@@ -172,7 +153,6 @@ export async function submitResult(
   return toView(await loadRow(lessonId));
 }
 
-/** The open-ended tutor reply. Guardrailed: never given the answer. */
 export async function askTutor(
   lessonId: string,
   question: string,
@@ -187,7 +167,6 @@ export async function askTutor(
   return { answer };
 }
 
-/** Read model for the frontend (also used to restore state on page reload). */
 export async function getLesson(lessonId: string): Promise<LessonView> {
   return toView(await loadRow(lessonId));
 }
