@@ -1,0 +1,18 @@
+# dependencies
+**/node_modules
+
+# build output
+**/.next
+**/.mastra
+**/dist
+**/out
+
+# env / secrets
+**/.env
+**/.env.local
+
+# misc
+**/*.log
+**/*.tsbuildinfo
+.DS_Store
+**/next-env.d.ts
