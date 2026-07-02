@@ -39,6 +39,23 @@ export const mastra = new Mastra({
     port: process.env.PORT ? Number(process.env.PORT) : 4111, // Railway sets PORT
     cors: { origin: "*", allowMethods: ["*"], allowHeaders: ["*"] },
     apiRoutes: [
+      // accept raw text (notes, topic, anything) and store it as a doc
+      registerApiRoute("/upload-text", {
+        method: "POST",
+        handler: async (c) => {
+          const { text, title } = await readJson<{ text: string; title?: string }>(c);
+          if (!text?.trim()) return c.json({ error: "text required" }, 400);
+          const id = crypto.randomUUID();
+          await ensureTables();
+          const content = title ? `[${title}]\n\n${text}` : text;
+          await pool.query(
+            "insert into documents (id, content) values ($1, $2)",
+            [id, content],
+          );
+          return c.json({ docId: id, chars: content.length });
+        },
+      }),
+
       // parse a PDF and store its text
       registerApiRoute("/upload", {
         method: "POST",
